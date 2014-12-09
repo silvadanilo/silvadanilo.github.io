@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+        <script type="text/javascript">
+            angular.module('probabilita-app', []).controller('MainController', function($scope) {
+                $scope.$watchGroup(['nQuestions', 'nResponsesForAQuestion', 'type', 'rightAnswers'], function(newValues, oldValues) {
+                    for(var i in newValues) {
+                        if (!newValues[i]) {
+                            $scope.result = 'Compila tutti i valori';
+                            return;
+                        }
+                    }
+
+                    $scope.result = (probabilita(newValues[0], newValues[1], newValues[2], newValues[3]) * 100) + '%';
+                });
+            });
+
+            var f = [];
+            function factorial (n) {
+                if (n == 0 || n == 1) {
+                    return 1;
+                }
+
+                if (f[n] > 0) {
+                    return f[n];
+                }
+
+                return f[n] = factorial(n-1) * n;
+            }
+
+            probabilita = function (nQuestions, nResponsesForAQuestion, type, rightAnswers) {
+                var rateOnASingleResponse = 1 / nResponsesForAQuestion;
+
+                if (type == 'esattamente') {
+                    return C(nQuestions, rightAnswers) * Math.pow(rateOnASingleResponse, rightAnswers) * Math.pow(1-rateOnASingleResponse, nQuestions-rightAnswers);
+                } else if(type == 'almeno') {
+                    var result = 0;
+                    for (var i = rightAnswers; i <= nQuestions; i++) {
+                        result += C(nQuestions, i) * Math.pow(rateOnASingleResponse, i) * Math.pow(1-rateOnASingleResponse, nQuestions-i);
+                    }
+                    return result;
+                }
+            }
+
+            C = function (max, right) {
+                return (factorial(max) / (factorial(right) * factorial(max-right)));
+            }
+
+        </script>
+    </head>
+
+    <body ng-app="probabilita-app">
+
+    <div ng-controller="MainController">
+        <p>Numero totale di quesiti: <input type="number" ng-model="nQuestions" /></p>
+        <p>Numero totale di risposte per quesito: <input type="number" ng-model="nResponsesForAQuestion"/>&nbsp;&nbsp; - &nbsp;&nbsp;Numero di risposte corrette per quesito: 1</p>
+        <p> Calcolare la probabilit&agrave; che
+            <select ng-model="type">
+                <option value="esattamente">esattamente</option>
+                <option value="almeno">almeno</option>
+            </select>
+            <input type="number" ng-model="rightAnswers" /> risposte siano corrette.
+        </p>
+        <p>{{result}}</p>
+    </div>
+
+    </body>
+</html>
