@@ -3,16 +3,19 @@
     <head>
         <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
         <script type="text/javascript">
-            angular.module('probabilita-app', []).controller('MainController', function($scope) {
+            angular.module('probabilita-app', []).controller('MainController', function($scope, $sce) {
+                $scope.type = 'almeno';
+
                 $scope.$watchGroup(['nQuestions', 'nResponsesForAQuestion', 'type', 'rightAnswers'], function(newValues, oldValues) {
                     for(var i in newValues) {
                         if (!newValues[i]) {
-                            $scope.result = 'Compila tutti i valori';
+                            $scope.result = $sce.trustAsHtml('Compila tutti i valori');
                             return;
                         }
                     }
 
-                    $scope.result = (probabilita(newValues[0], newValues[1], newValues[2], newValues[3]) * 100) + '%';
+                    $scope.result = $sce.trustAsHtml("La probabilit&agrave; di rispondere correttamente a " + newValues[3] + " quesiti su un totale di " + newValues[0] + " &egrave; di: <strong>" +
+                        (probabilita(newValues[0], newValues[1], newValues[2], newValues[3]) * 100) + '%</strong>');
                 });
             });
 
@@ -57,12 +60,12 @@
         <p>Numero totale di risposte per quesito: <input type="number" ng-model="nResponsesForAQuestion"/>&nbsp;&nbsp; - &nbsp;&nbsp;Numero di risposte corrette per quesito: 1</p>
         <p> Calcolare la probabilit&agrave; che
             <select ng-model="type">
+                <option value="almeno" selected="selected">almeno</option>
                 <option value="esattamente">esattamente</option>
-                <option value="almeno">almeno</option>
             </select>
             <input type="number" ng-model="rightAnswers" /> risposte siano corrette.
         </p>
-        <p>{{result}}</p>
+        <p ng-bind-html="result">{{result}}</p>
     </div>
 
     </body>
